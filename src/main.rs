@@ -1,11 +1,14 @@
-use std::error;
-
+use anyhow::Result;
 use clap::Parser;
 
 mod argparse;
-use crate::argparse::{Cli, Commands};
+mod log;
+use crate::{
+    argparse::{Cli, Commands},
+    log::log_timestamp,
+};
 
-fn main() -> Result<(), Box<dyn error::Error>> {
+fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
@@ -13,7 +16,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
             action,
             log_file_path,
         } => {
-            dbg!(action, log_file_path);
+            log_timestamp(action, log_file_path)?;
         }
         Commands::Report {
             mode,
