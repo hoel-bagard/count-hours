@@ -4,9 +4,11 @@ use clap::Parser;
 
 mod argparse;
 mod log;
+mod report;
 use crate::{
     argparse::{Cli, Commands},
     log::log_timestamp,
+    report::process_csv,
 };
 
 fn main() -> Result<()> {
@@ -26,6 +28,7 @@ fn main() -> Result<()> {
             hourly_wage,
         } => {
             dbg!(mode, log_file_path, target_month, hourly_wage);
+            process_csv(*mode, log_file_path, *target_month, *hourly_wage)?;
         }
     }
     Ok(())
