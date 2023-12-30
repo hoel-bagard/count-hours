@@ -1,3 +1,4 @@
+#![allow(clippy::module_name_repetitions)]
 use anyhow::Result;
 use clap::Parser;
 
@@ -16,7 +17,7 @@ fn main() -> Result<()> {
             action,
             log_file_path,
         } => {
-            log_timestamp(action, log_file_path)?;
+            log_timestamp(*action, log_file_path)?;
         }
         Commands::Report {
             mode,

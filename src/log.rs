@@ -1,13 +1,13 @@
+use std::fs::{File, OpenOptions};
+use std::io::{self, BufRead, BufReader, Write};
 use std::path::PathBuf;
-
-use crate::argparse::Action;
 
 use anyhow::{bail, Result};
 use chrono::Local;
-use std::fs::{File, OpenOptions};
-use std::io::{self, BufRead, BufReader, Write};
 
-pub fn log_timestamp(action: &Action, log_file_path: &PathBuf) -> Result<()> {
+use crate::argparse::Action;
+
+pub fn log_timestamp(action: Action, log_file_path: &PathBuf) -> Result<()> {
     // Get current time.
     let current_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
@@ -15,7 +15,7 @@ pub fn log_timestamp(action: &Action, log_file_path: &PathBuf) -> Result<()> {
         Action::Start => {
             let mut file = if log_file_path.try_exists()? {
                 // Check if the last line has both start and end times.
-                let file = File::open(&log_file_path)?;
+                let file = File::open(log_file_path)?;
                 let last_line = BufReader::new(file).lines().last().transpose()?;
 
                 if let Some(line) = last_line {
@@ -35,7 +35,7 @@ pub fn log_timestamp(action: &Action, log_file_path: &PathBuf) -> Result<()> {
                 io::stdin().read_line(&mut input)?;
 
                 if input.trim().eq_ignore_ascii_case("y") || input.trim().is_empty() {
-                    File::create(&log_file_path)?
+                    File::create(log_file_path)?
                 } else {
                     println!("File not created, exiting.");
                     return Ok(());
@@ -43,15 +43,15 @@ pub fn log_timestamp(action: &Action, log_file_path: &PathBuf) -> Result<()> {
             };
 
             // Write current time to file.
-            write!(file, "{}", current_time)?;
+            write!(file, "{current_time}")?;
         }
         Action::End => {
             if !log_file_path.try_exists()? {
-                bail!("File not found {}", log_file_path.to_str().unwrap());
+                bail!("File not found {}", log_file_path.to_string_lossy());
             }
 
             // Check that there is a start time.
-            let file = File::open(&log_file_path)?;
+            let file = File::open(log_file_path)?;
             let last_line = BufReader::new(&file).lines().last().transpose()?;
 
             if let Some(line) = last_line {
@@ -64,7 +64,7 @@ pub fn log_timestamp(action: &Action, log_file_path: &PathBuf) -> Result<()> {
 
             // Add a "," to the last line, then write current time to file.
             let mut file = OpenOptions::new().append(true).open(log_file_path)?;
-            writeln!(file, ",{}", current_time)?;
+            writeln!(file, ",{current_time}")?;
         }
     }
 
