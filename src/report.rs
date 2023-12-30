@@ -9,7 +9,7 @@ use std::{
 };
 
 use anyhow::{bail, Result};
-use chrono::{Datelike, Duration, NaiveDateTime};
+use chrono::{Datelike, Duration, NaiveDateTime, Timelike};
 
 use crate::argparse::Mode;
 
@@ -19,6 +19,8 @@ pub fn process_csv(
     target_month: Option<u8>,
     hourly_wage: Option<u32>,
 ) -> Result<()> {
+    let mut start_times: Vec<NaiveDateTime> = Vec::new();
+    let mut end_times: Vec<NaiveDateTime> = Vec::new();
     let mut total_hours = Duration::minutes(0);
     for line in fs::read_to_string(log_file_path)?.lines() {
         let times = line.split(',').collect::<Vec<&str>>();
@@ -41,6 +43,9 @@ pub fn process_csv(
         } else {
             total_hours = total_hours + (end_time - start_time).into()
         }
+
+        start_times.push(start_time);
+        end_times.push(end_time);
     }
 
     match mode {
@@ -60,8 +65,30 @@ pub fn process_csv(
                 )
             }
         }
-        Mode::Starts => {}
-        Mode::Ends => {}
+        Mode::Starts => {
+            // Print 00:00 for days with no entry.
+            let mut prev_day = 0;
+            for start_time in start_times.iter() {
+                while start_time.day() > prev_day + 1 {
+                    prev_day += 1;
+                    println!("00:00");
+                }
+                println!("{:02}:{:02}", start_time.hour(), start_time.minute());
+                prev_day = start_time.day();
+            }
+        }
+        Mode::Ends => {
+            // Print 00:00 for days with no entry.
+            let mut prev_day = 0;
+            for end_time in end_times.iter() {
+                while end_time.day() > prev_day + 1 {
+                    prev_day += 1;
+                    println!("00:00");
+                }
+                println!("{:02}:{:02}", end_time.hour(), end_time.minute());
+                prev_day = end_time.day();
+            }
+        }
     }
 
     Ok(())
