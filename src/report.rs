@@ -52,10 +52,12 @@ pub fn process_csv(
         Mode::Total => {
             if let Some(hourly_wage) = hourly_wage {
                 println!(
-                    "Total worked hours: {}:{:02}, total outsourcing fee: {}",
+                    "Total worked hours: {}:{:02}, 請求金額（税込）: {}, 請求金額（税抜）: {}",
                     total_hours.num_hours(),
                     total_hours.num_minutes() % 60,
-                    total_hours.num_minutes() as f64 * f64::from(hourly_wage) / 60.0
+                    total_hours.num_minutes() as f64 * f64::from(hourly_wage) / 60.0,
+                    ((total_hours.num_minutes() as f64 * f64::from(hourly_wage) / 60.0) / 1.1)
+                        as u32
                 )
             } else {
                 println!(
