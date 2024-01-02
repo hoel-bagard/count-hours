@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - src/**
+      - Cargo.lock
+      - Cargo.toml
+      - .github/workflows/ci.yaml
+  pull_request:
+    paths:
+      - src/**
+      - Cargo.lock
+      - Cargo.toml
+      - .github/workflows/ci.yaml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        env:
+          RUSTFLAGS: -C debuginfo=0  # Do not produce debug symbols to keep memory usage down
+        run : |
+          cargo clippy -- \
+          -D warnings \
+          -W clippy::pedantic \
+          -W clippy::nursery \
+          -W clippy::unwrap_used \
+          -W clippy::expect_used  \
+          -A dead_code
