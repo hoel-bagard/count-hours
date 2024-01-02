@@ -1,8 +1,3 @@
-// - report
-//   -> total + file + hourly wage
-//   -> start_hours + file      (print in XX:XX format, one time per line, print blank or 00:00 for days not work so that it's easy to copy/paste into an excel document)
-//   -> end_hours + file
-
 use std::{
     fs::{self},
     path::PathBuf,
@@ -22,6 +17,7 @@ pub fn process_csv(
     let mut start_times: Vec<NaiveDateTime> = Vec::new();
     let mut end_times: Vec<NaiveDateTime> = Vec::new();
     let mut total_hours = Duration::minutes(0);
+    let mut previous_day: Option<u32> = None;
     for line in fs::read_to_string(log_file_path)?.lines() {
         let times = line.split(',').collect::<Vec<&str>>();
         if times.len() != 2 {
@@ -29,6 +25,7 @@ pub fn process_csv(
         }
         let start_time = NaiveDateTime::parse_from_str(times[0], "%Y-%m-%d %H:%M:%S")?;
         let end_time = NaiveDateTime::parse_from_str(times[1], "%Y-%m-%d %H:%M:%S")?;
+        let day = start_time.day();
 
         if let Some(target_month) = target_month {
             if start_time.month() != target_month.into() {
@@ -36,16 +33,25 @@ pub fn process_csv(
             }
         }
 
-        if (end_time - start_time).num_seconds() < 0 {
+        let duration = end_time - start_time;
+        if duration.num_seconds() < 0 {
             bail!("Found start time later than end time: {}", line);
-        } else if (end_time - start_time).num_hours() > 24 {
+        } else if duration.num_hours() > 24 {
             bail!("Found abnormally work duration: {}", line);
         } else {
             total_hours = total_hours + (end_time - start_time).into()
         }
 
-        start_times.push(start_time);
-        end_times.push(end_time);
+        // If there are multiple timestamps for a given day, then "concatenate" them.
+        if previous_day.is_some_and(|prev_day| prev_day == day) {
+            if let Some(last) = end_times.last_mut() {
+                *last = *last + duration
+            }
+        } else {
+            start_times.push(start_time);
+            end_times.push(end_time);
+        }
+        previous_day = Some(day);
     }
 
     match mode {
