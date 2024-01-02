@@ -4,12 +4,6 @@ permissions:
   contents: write
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "Tag name of the release"
-        required: true
-        type: string
   push:
     tags:
     - "[0-9]+.[0-9]+.[0-9]+"
@@ -23,6 +17,8 @@ jobs:
   # and names the release after the `x.y.z` tag that was pushed.
   # It's separate from building the release so that we only create the release once.
   create-release:
+    name: create-release
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +42,7 @@ jobs:
       - name: Create GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create $VERSION --draft --verify-tag --title $VERSION
+        run: gh release create $VERSION --verify-tag --title $VERSION
 
     outputs:
       version: ${{ env.VERSION }}
@@ -86,4 +82,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         run: |
           set -e
-          gh release upload ${{ github.event.release.tag_name || inputs.tag_name }} ./target/release/count-hours --clobber
+          version="${{ needs.create-release.outputs.version }}"
+          gh release upload $version ./target/release/count-hours --clobber
