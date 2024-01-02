@@ -10,7 +10,7 @@ CLI tool to help manage hours worked on a project.
 
 ## Installation
 ### Download
-Precompiled binaries can be downloaded [here](https://github.com/hoel-bagard/count-hours/releases(
+Precompiled binaries can be downloaded [here](https://github.com/hoel-bagard/count-hours/releases).
 
 ### Building
 This program is written in Rust, so you will need to [install Rust](https://www.rust-lang.org/) in order to compile it.
