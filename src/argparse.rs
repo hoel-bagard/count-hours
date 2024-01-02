@@ -46,6 +46,7 @@ pub enum Commands {
         /// Target month, if given only the entries related to that month are printed.
         #[arg(short, long)]
         target_month: Option<u8>,
+        /// If provided when using the `total` mode, then also prints out the total amount to bill.
         #[arg(short('w'), long)]
         hourly_wage: Option<u32>,
     },

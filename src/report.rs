@@ -8,6 +8,7 @@ use chrono::{Datelike, Duration, NaiveDateTime, Timelike};
 
 use crate::argparse::Mode;
 
+/// Read a CSV written by the log command, and print out its content in a way that is easily copy/pastable into an excel sheet.
 pub fn process_csv(
     mode: Mode,
     log_file_path: &PathBuf,

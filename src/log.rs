@@ -7,6 +7,7 @@ use chrono::Local;
 
 use crate::argparse::Action;
 
+/// Log current timestamp to the given file, either on a newline or after the previous timestamp, depending on the action.
 pub fn log_timestamp(action: Action, log_file_path: &PathBuf) -> Result<()> {
     // Get current time.
     let current_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
