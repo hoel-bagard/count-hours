@@ -94,3 +94,6 @@ For example
 2023-12-29 20:30:00,2023-12-29 23:30:00
 2023-12-30 19:00:00,2023-12-30 22:00:00
 ```
+
+## TODO:
+- Make Windows binary using [cross](https://github.com/cross-rs/cross) ?  (see [here](https://github.com/BurntSushi/ripgrep/blob/master/.github/workflows/release.yml) for an example)
