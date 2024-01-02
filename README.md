@@ -31,7 +31,7 @@ The resulting binary will be in `./target/release/count-hours`. You can check th
 For convenience, you can place the binary in a folder in the PATH. For example:
 
 ```console
-sudo cp ./target/release/count-hours /usr/local
+sudo cp ./target/release/count-hours /usr/local/bin
 ```
 
 or
