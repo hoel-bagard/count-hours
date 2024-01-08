@@ -27,7 +27,6 @@ fn main() -> Result<()> {
             target_month,
             hourly_wage,
         } => {
-            dbg!(mode, log_file_path, target_month, hourly_wage);
             process_csv(*mode, log_file_path, *target_month, *hourly_wage)?;
         }
     }
