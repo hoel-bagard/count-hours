@@ -96,12 +96,27 @@ pub fn process_csv(
             // Print 00:00 for days with no entry.
             let mut prev_day = 0;
             for end_time in &end_times {
-                while end_time.day() > prev_day + 1 {
+                // Assume that any hour between midnight and 6am corresponds to the previous day.
+                // Make any early morning work belong to the previous day.
+                let end_hour = if end_time.hour() > 6 {
+                    end_time.hour()
+                } else {
+                    end_time.hour() + 24
+                };
+                let end_day = if end_time.hour() > 6 {
+                    end_time.day()
+                } else {
+                    end_time.day() - 1
+                };
+
+                while end_day > prev_day + 1 {
                     prev_day += 1;
                     println!("00:00");
                 }
-                println!("{:02}:{:02}", end_time.hour(), end_time.minute());
-                prev_day = end_time.day();
+
+                println!("{:02}:{:02}", end_hour, end_time.minute());
+
+                prev_day = end_day;
             }
         }
     }
