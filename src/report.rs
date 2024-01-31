@@ -46,7 +46,7 @@ pub fn process_csv(
             bail!("Found abnormally work duration: {}", line);
         }
 
-        total_hours = total_hours + duration;
+        total_hours += duration;
 
         // If there are multiple timestamps for a given day, then "concatenate" them.
         if previous_day.is_some_and(|prev_day| prev_day == day) {
