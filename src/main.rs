@@ -8,6 +8,7 @@ mod report;
 use crate::{
     argparse::{Cli, Commands},
     log::log_timestamp,
+    report::print_report,
     report::process_csv,
 };
 
@@ -27,7 +28,8 @@ fn main() -> Result<()> {
             target_month,
             hourly_wage,
         } => {
-            process_csv(*mode, log_file_path, *target_month, *hourly_wage)?;
+            let (start_times, end_times, total_hours) = process_csv(log_file_path, *target_month)?;
+            print_report(*mode, &start_times, &end_times, &total_hours, *hourly_wage);
         }
     }
     Ok(())

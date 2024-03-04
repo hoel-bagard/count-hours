@@ -4,22 +4,39 @@ use std::{
 };
 
 use anyhow::{bail, Result};
-use chrono::{Datelike, Duration, NaiveDateTime, Timelike};
+use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
 
 use crate::argparse::Mode;
 
+#[allow(clippy::expect_used)]
+fn nb_days_in_month(year: i32, month: u32) -> u32 {
+    u32::try_from(
+        NaiveDate::from_ymd_opt(
+            match month {
+                12 => year + 1,
+                _ => year,
+            },
+            match month {
+                12 => 1,
+                _ => month + 1,
+            },
+            1,
+        )
+        .expect("Date to be valid since we use the first of the month.")
+        .signed_duration_since(
+            NaiveDate::from_ymd_opt(year, month, 1)
+                .expect("Date to be valid since we use the first of the month."),
+        )
+        .num_days(),
+    )
+    .expect("Number of days is small and positive")
+}
+
 /// Read a CSV written by the log command, and print out its content in a way that is easily copy/pastable into an excel sheet.
-#[allow(
-    clippy::cast_precision_loss,
-    clippy::cast_sign_loss,
-    clippy::cast_possible_truncation
-)]
 pub fn process_csv(
-    mode: Mode,
     log_file_path: &PathBuf,
     target_month: Option<u8>,
-    hourly_wage: Option<u32>,
-) -> Result<()> {
+) -> Result<(Vec<NaiveDateTime>, Vec<NaiveDateTime>, Duration)> {
     let mut start_times: Vec<NaiveDateTime> = Vec::new();
     let mut end_times: Vec<NaiveDateTime> = Vec::new();
     let mut total_hours = Duration::minutes(0);
@@ -42,7 +59,8 @@ pub fn process_csv(
         let duration = end_time - start_time;
         if duration.num_seconds() < 0 {
             bail!("Found start time later than end time: {}", line);
-        } else if duration.num_hours() > 24 {
+        }
+        if duration.num_hours() > 24 {
             bail!("Found abnormally work duration: {}", line);
         }
 
@@ -60,6 +78,22 @@ pub fn process_csv(
         previous_day = Some(day);
     }
 
+    Ok((start_times, end_times, total_hours))
+}
+
+#[allow(
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_truncation,
+    clippy::expect_used
+)]
+pub fn print_report(
+    mode: Mode,
+    start_times: &Vec<NaiveDateTime>,
+    end_times: &Vec<NaiveDateTime>,
+    total_hours: &Duration,
+    hourly_wage: Option<u32>,
+) {
     match mode {
         Mode::Total => hourly_wage.map_or_else(
             || {
@@ -83,7 +117,7 @@ pub fn process_csv(
         Mode::Starts => {
             // Print 00:00 for days with no entry.
             let mut prev_day = 0;
-            for start_time in &start_times {
+            for start_time in start_times {
                 while start_time.day() > prev_day + 1 {
                     prev_day += 1;
                     println!("00:00");
@@ -91,11 +125,27 @@ pub fn process_csv(
                 println!("{:02}:{:02}", start_time.hour(), start_time.minute());
                 prev_day = start_time.day();
             }
+
+            // Print 00:00 until last day of the month.
+            let nb_days_in_month = nb_days_in_month(
+                start_times
+                    .first()
+                    .expect("to have worked at least one day")
+                    .year(),
+                start_times
+                    .first()
+                    .expect("to have worked at least one day")
+                    .month(),
+            );
+            while nb_days_in_month > prev_day {
+                prev_day += 1;
+                println!("00:00");
+            }
         }
         Mode::Ends => {
             // Print 00:00 for days with no entry.
             let mut prev_day = 0;
-            for end_time in &end_times {
+            for end_time in end_times {
                 // Assume that any hour between midnight and 6am corresponds to the previous day.
                 // Make any early morning work belong to the previous day.
                 let end_hour = if end_time.hour() > 6 {
@@ -118,8 +168,22 @@ pub fn process_csv(
 
                 prev_day = end_day;
             }
+
+            // Print 00:00 until last day of the month.
+            let nb_days_in_month = nb_days_in_month(
+                start_times
+                    .first()
+                    .expect("to have worked at least one day")
+                    .year(),
+                start_times
+                    .first()
+                    .expect("to have worked at least one day")
+                    .month(),
+            );
+            while nb_days_in_month > prev_day {
+                prev_day += 1;
+                println!("00:00");
+            }
         }
     }
-
-    Ok(())
 }
