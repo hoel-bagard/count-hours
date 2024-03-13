@@ -6,7 +6,7 @@ CLI tool to help manage hours worked on a project.
 * [Installation](#installation)
 * [User Guide](#usage)
 * [File format](#file-format)
-* [Make Release](FAQ.md)
+* [Make Release](RELEASE-CHECKLIST.md)
 
 ## Installation
 ### Download
