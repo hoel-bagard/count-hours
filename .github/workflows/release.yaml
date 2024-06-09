@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     tags:
-    - "[0-9]+.[0-9]+.[0-9]+"
+    - "v?[0-9]+.[0-9]+.[0-9]+"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +25,9 @@ jobs:
 
       - name: Get the release version from the tag
         if: env.VERSION == ''
-        run: echo "VERSION=${{ github.ref_name || inputs.tag_name }}" >> $GITHUB_ENV
+        run: |
+          echo "GH_RELEASE_TAG=${{ github.ref_name || inputs.tag_name }}" >> $GITHUB_ENV
+          echo "VERSION=$(echo "${{ github.ref_name || inputs.tag_name }}"  | sed 's/^[a-zA-Z]//' )" >> $GITHUB_ENV
 
       - name: Show the version
         run: |
@@ -42,10 +44,10 @@ jobs:
       - name: Create GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create $VERSION --verify-tag --title $VERSION
+        run: gh release create $GH_RELEASE_TAG --verify-tag --title $GH_RELEASE_TAG
 
     outputs:
-      version: ${{ env.VERSION }}
+      gh_release_tag: ${{ env.GH_RELEASE_TAG }}
 
   build-release:
     name: build-release
@@ -82,5 +84,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         run: |
           set -e
-          version="${{ needs.create-release.outputs.version }}"
+          version="${{ needs.create-release.outputs.gh_release_tag }}"
           gh release upload $version ./target/release/count-hours --clobber
