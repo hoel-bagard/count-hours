@@ -109,14 +109,6 @@ For example
 2023-12-30 19:00:00,2023-12-30 22:00:00
 ```
 
-## GitHub release
-
-A GitHub release can be created using the following command. Make sure to update the version in `Cargo.toml` and to check that the CI is passing before.
-
-```bash
-TAG_NAME=v0.1.4; git tag -s $TAG_NAME -m $TAG_NAME && git tag -v $TAG_NAME && git push origin $TAG_NAME
-```
-
 ## TODO:
 
 - Make Windows binary using [cross](https://github.com/cross-rs/cross) ? (see [here](https://github.com/BurntSushi/ripgrep/blob/master/.github/workflows/release.yml) for an example)
