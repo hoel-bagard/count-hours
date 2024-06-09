@@ -33,6 +33,7 @@ fn nb_days_in_month(year: i32, month: u32) -> u32 {
 }
 
 /// Read a CSV written by the log command, and print out its content in a way that is easily copy/pastable into an excel sheet.
+#[allow(clippy::expect_used)]
 pub fn process_csv(
     log_file_path: &PathBuf,
     target_month: Option<u8>,
@@ -46,8 +47,13 @@ pub fn process_csv(
         if times.len() != 2 {
             bail!("Found malformed line: {}", line)
         }
-        let start_time = NaiveDateTime::parse_from_str(times[0], "%Y-%m-%d %H:%M:%S")?;
-        let end_time = NaiveDateTime::parse_from_str(times[1], "%Y-%m-%d %H:%M:%S")?;
+        // Set the seconds to 0 so that the duration (end - start) matches with the data entered in Excel (where seconds to not appear).
+        let start_time = NaiveDateTime::parse_from_str(times[0], "%Y-%m-%d %H:%M:%S")?
+            .with_second(0)
+            .expect("0 to be valid for second.");
+        let end_time = NaiveDateTime::parse_from_str(times[1], "%Y-%m-%d %H:%M:%S")?
+            .with_second(0)
+            .expect("0 to be valid for second.");
         let day = start_time.day();
 
         if let Some(target_month) = target_month {
