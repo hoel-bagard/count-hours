@@ -116,7 +116,7 @@ pub fn print_report(
                     total_hours.num_minutes() % 60,
                     total_hours.num_minutes() as f64 * f64::from(hourly_wage) / 60.0,
                     ((total_hours.num_minutes() as f64 * f64::from(hourly_wage) / 60.0) / 1.1)
-                        as u32
+                        .ceil() as u32
                 );
             },
         ),
