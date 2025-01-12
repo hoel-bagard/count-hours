@@ -57,14 +57,13 @@ pub fn process_csv(
             .expect("0 to be valid for second.");
         let day = start_time.day();
 
-        if target_month.map_or(false, |month| start_time.month() != month.into()) {
+        if target_month.is_some_and(|month| start_time.month() != month.into()) {
             continue;
         }
 
-        if target_year.map_or(false, |year| start_time.year() != year.into()) {
+        if target_year.is_some_and(|year| start_time.year() != year.into()) {
             continue;
         }
-
         let duration = end_time - start_time;
         if duration.num_seconds() < 0 {
             bail!("Found start time later than end time: {}", line);
