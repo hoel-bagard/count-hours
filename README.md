@@ -70,13 +70,13 @@ The report mode processes the file created with the log command to make it easie
 #### Get total amount of hours worked:
 
 ```console
-count-hours report total <file-path> -t <target month> -w <hourly wage>
+count-hours report total <file-path> -y <target year> -m <target month> -w <hourly wage>
 ```
 
 For example:
 
 ```console
-count-hours report total ~/work/my-project/.count-hours.csv -t 12 -w 3000
+count-hours report total ~/work/my-project/.count-hours.csv -y 2025 -t 1 -w 1000
 ```
 
 (The target month and hourly wage are optional.)

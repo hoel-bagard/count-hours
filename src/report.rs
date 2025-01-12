@@ -37,6 +37,7 @@ fn nb_days_in_month(year: i32, month: u32) -> u32 {
 pub fn process_csv(
     log_file_path: &PathBuf,
     target_month: Option<u8>,
+    target_year: Option<u16>,
 ) -> Result<(Vec<NaiveDateTime>, Vec<NaiveDateTime>, Duration)> {
     let mut start_times: Vec<NaiveDateTime> = Vec::new();
     let mut end_times: Vec<NaiveDateTime> = Vec::new();
@@ -56,10 +57,12 @@ pub fn process_csv(
             .expect("0 to be valid for second.");
         let day = start_time.day();
 
-        if let Some(target_month) = target_month {
-            if start_time.month() != target_month.into() {
-                continue;
-            }
+        if target_month.map_or(false, |month| start_time.month() != month.into()) {
+            continue;
+        }
+
+        if target_year.map_or(false, |year| start_time.year() != year.into()) {
+            continue;
         }
 
         let duration = end_time - start_time;

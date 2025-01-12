@@ -26,9 +26,11 @@ fn main() -> Result<()> {
             mode,
             log_file_path,
             target_month,
+            target_year,
             hourly_wage,
         } => {
-            let (start_times, end_times, total_hours) = process_csv(log_file_path, *target_month)?;
+            let (start_times, end_times, total_hours) =
+                process_csv(log_file_path, *target_month, *target_year)?;
             print_report(*mode, &start_times, &end_times, &total_hours, *hourly_wage);
         }
     }
