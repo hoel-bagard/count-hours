@@ -53,19 +53,25 @@ pub fn log_timestamp(action: Action, log_file_path: &PathBuf) -> Result<()> {
 
             // Check that there is a start time.
             let file = File::open(log_file_path)?;
-            let last_line = BufReader::new(&file).lines().last().transpose()?;
+            let reader = BufReader::new(&file);
+            let lines: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
 
-            if let Some(line) = last_line {
-                if line.split(',').count() != 1 {
-                    bail!("No start time found: {}.", line);
+            if let Some(last_line) = lines.last() {
+                if last_line.split(',').count() != 1 {
+                    bail!("No start time found: {}.", last_line);
                 }
+
+                // In case there is already a newline after the start time, rewrite the file with all the lines except the last one, then add the modified last line.
+                // This is simpler than overwriting only the last line, and does not really matter given the size of the file.
+                let mut file = File::create(log_file_path)?;
+                for line in &lines[..lines.len() - 1] {
+                    writeln!(file, "{}", line)?;
+                }
+
+                writeln!(file, "{},{}", last_line.trim_end(), current_time)?;
             } else {
                 bail!("Log file exists but is empty. Cannot start with an end time.");
             }
-
-            // Add a "," to the last line, then write current time to file.
-            let mut file = OpenOptions::new().append(true).open(log_file_path)?;
-            writeln!(file, ",{current_time}")?;
         }
     }
 
