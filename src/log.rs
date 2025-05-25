@@ -65,7 +65,7 @@ pub fn log_timestamp(action: Action, log_file_path: &PathBuf) -> Result<()> {
                 // This is simpler than overwriting only the last line, and does not really matter given the size of the file.
                 let mut file = File::create(log_file_path)?;
                 for line in &lines[..lines.len() - 1] {
-                    writeln!(file, "{}", line)?;
+                    writeln!(file, "{line}")?;
                 }
 
                 writeln!(file, "{},{}", last_line.trim_end(), current_time)?;
